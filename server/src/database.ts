@@ -17,8 +17,8 @@ let listaDeTareas: Tarea[] = [
   },
   {
     id: 2,
-    titulo: 'Preparar la exposición de tRPC',
-    descripcion: 'Crear slides y ejemplos de código',
+    titulo: 'Aprender Docker',
+    descripcion: 'Instalar Docker y crear contenedores para aplicaciones simples',
     completada: false,
     prioridad: 'alta',
     fechaCreacion: new Date('2024-01-02'),
@@ -70,7 +70,7 @@ export function actualizarTarea(
     descripcion?: string;
     completada?: boolean;
     prioridad?: 'baja' | 'media' | 'alta';
-  }
+  },
 ): Tarea | null {
   const tareaIndex = listaDeTareas.findIndex((t) => t.id === id);
   if (tareaIndex === -1) {
@@ -80,7 +80,9 @@ export function actualizarTarea(
   const tareaActualizada: Tarea = {
     ...listaDeTareas[tareaIndex],
     ...(cambios.titulo && { titulo: cambios.titulo }),
-    ...(cambios.descripcion !== undefined && { descripcion: cambios.descripcion }),
+    ...(cambios.descripcion !== undefined && {
+      descripcion: cambios.descripcion,
+    }),
     ...(cambios.completada !== undefined && { completada: cambios.completada }),
     ...(cambios.prioridad && { prioridad: cambios.prioridad }),
     fechaActualizacion: new Date(),
@@ -91,10 +93,10 @@ export function actualizarTarea(
 }
 
 // Eliminar una tarea
-export function eliminarTarea(id: number): Tarea | null {
+export function eliminarTarea(id: number): Tarea | undefined {
   const tareaIndex = listaDeTareas.findIndex((t) => t.id === id);
   if (tareaIndex === -1) {
-    return null;
+    return undefined;
   }
 
   const [tareaEliminada] = listaDeTareas.splice(tareaIndex, 1);

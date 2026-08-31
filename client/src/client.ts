@@ -48,8 +48,8 @@ async function ejecutarDemo() {
     // ========== CREATE: Crear una nueva tarea ==========
     console.log('\n[CREATE] Creando nueva tarea...');
     const nuevaTarea = await client.crearTarea.mutate({
-      titulo: 'Presentar la demo en vivo ante el profesor',
-      descripcion: 'Explicar el flujo completo de tRPC y CRUD',
+      titulo: 'Tarea de Matemáticas Avanzadas',
+      descripcion: 'Resolver problemas de álgebra y cálculo',
       prioridad: 'alta',
     });
     console.log(`✓ Tarea creada exitosamente:`);
@@ -59,8 +59,8 @@ async function ejecutarDemo() {
     // ========== CREATE: Crear otra tarea ==========
     console.log('[CREATE] Creando segunda tarea...');
     const otraTarea = await client.crearTarea.mutate({
-      titulo: 'Estudiar advanced tRPC patterns',
-      descripcion: 'Aprender sobre middlewares y contexto',
+      titulo: 'Tarea de Fisica Experimental',
+      descripcion: 'Realizar el experimento de caída libre y registrar resultados',
       prioridad: 'media',
     });
     console.log(
@@ -71,8 +71,8 @@ async function ejecutarDemo() {
     console.log('[UPDATE] Actualizando tarea con ID 2...');
     const tareaActualizada = await client.actualizarTarea.mutate({
       id: 2,
-      titulo: 'Preparar la exposición de tRPC [MEJORADO]',
-      descripcion: 'Crear slides, ejemplos y demostración interactiva',
+      titulo: 'Exposición de Filosofia y Ética',
+      descripcion: 'Preparar la presentación',
       completada: false,
       prioridad: 'alta',
     });
@@ -142,7 +142,7 @@ async function ejecutarDemo() {
     console.log(`  Completadas: ${statsFinal.completadas}`);
 
     console.log('\n╔═══════════════════════════════════════════════════════╗');
-    console.log('║         DEMO COMPLETADA EXITOSAMENTE             ║');
+    console.log('║         DEMO COMPLETADA EXITOSAMENTE                  ║');
     console.log('╚═══════════════════════════════════════════════════════╝');
   } catch (error) {
     console.error('ERROR en la demo:', error);

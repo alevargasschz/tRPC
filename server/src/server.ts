@@ -11,7 +11,7 @@ const server = createHTTPServer({
 
 server.listen(4000);
 console.log('Servidor Backend tRPC corriendo en http://localhost:4000');
-console.log('Abre otra terminal y ejecuta: npx tsx src/client.ts');
+console.log('Abre otra terminal y ejecuta: npm run client');
 
 // Exportar tipo del enrutador para el Frontend
 export type { AppRouter };
