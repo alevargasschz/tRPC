@@ -1,178 +1,226 @@
-# Gestor de Tareas con tRPC - CRUD Completo
+# Gestor de tareas con tRPC
 
-Una aplicación fullstack que demuestra el **potencial completo de tRPC** implementando un **CRUD (Create, Read, Update, Delete) completo** para un gestor de tareas con validaciones robustas, tipado end-to-end y una API type-safe.
+Aplicación fullstack para administrar tareas mediante una API construida con **tRPC**, un servidor en **Node.js + Express**, persistencia en **MongoDB** y una interfaz en **React + Vite**.
+El proyecto demuestra un CRUD completo con tipado end-to-end: los procedimientos definidos en el servidor se conocen automáticamente en el cliente gracias a TypeScript.
 
-## Tabla de Contenidos
+## Contenido
 
-- [Gestor de Tareas con tRPC - CRUD Completo](#gestor-de-tareas-con-trpc---crud-completo)
-  - [Tabla de Contenidos](#tabla-de-contenidos)
+- [Gestor de tareas con tRPC](#gestor-de-tareas-con-trpc)
+  - [Contenido](#contenido)
   - [Requisitos](#requisitos)
-  - [Instalación de Dependencias](#instalación-de-dependencias)
+  - [Arquitectura del proyecto](#arquitectura-del-proyecto)
   - [Configuración](#configuración)
-    - [Estructura de Carpetas](#estructura-de-carpetas)
-  - [Ejecución](#ejecución)
-    - [Terminal 1 - Inicia el Servidor](#terminal-1---inicia-el-servidor)
-    - [Terminal 2 - Ejecuta el Cliente](#terminal-2---ejecuta-el-cliente)
-  - [Conceptos Fundamentales](#conceptos-fundamentales)
+    - [1. Descargar el proyecto](#1-descargar-el-proyecto)
+    - [2. Iniciar MongoDB](#2-iniciar-mongodb)
+    - [3. Instalar dependencias](#3-instalar-dependencias)
+  - [Ejecución de la demo](#ejecución-de-la-demo)
+    - [Terminal 1: MongoDB](#terminal-1-mongodb)
+    - [Terminal 2: servidor tRPC](#terminal-2-servidor-trpc)
+    - [Terminal 3: cliente React](#terminal-3-cliente-react)
+  - [Procedimientos tRPC](#procedimientos-trpc)
+  - [Conceptos utilizados](#conceptos-utilizados)
     - [¿Qué es tRPC?](#qué-es-trpc)
-    - [Queries vs Mutations](#queries-vs-mutations)
+    - [Queries y mutations](#queries-y-mutations)
     - [Validación con Zod](#validación-con-zod)
-    - [Type Safety (Tipado Seguro)](#type-safety-tipado-seguro)
-
----
+    - [Tipado end-to-end](#tipado-end-to-end)
+    - [Batching y conexión del cliente](#batching-y-conexión-del-cliente)
+    - [Persistencia y separación de responsabilidades](#persistencia-y-separación-de-responsabilidades)
 
 ## Requisitos
 
-Antes de ejecutar la aplicación, asegúrate de tener instalado:
+Instala las siguientes herramientas antes de comenzar:
 
-- **Node.js** versión 16 o superior ([Descargar](https://nodejs.org/))
-- **npm** (generalmente viene con Node.js)
-- Un editor de código como **VS Code**
+- **Node.js 20.6 o superior** y npm. El servidor utiliza `process.loadEnvFile()` para cargar las variables de entorno.
+- **Docker Desktop**, con Docker Compose habilitado, para ejecutar MongoDB.
+- Un navegador web y, opcionalmente, **VS Code**.
 
-Para verificar que los tienes instalados, ejecuta en tu terminal:
+Comprueba las versiones desde una terminal:
 
 ```bash
 node --version
 npm --version
+docker --version
+docker compose version
 ```
 
----
-
-## Instalación de Dependencias
-
-Ejecuta el siguiente comando en la carpeta raíz del proyecto:
-
-```bash
-npm install
-```
-
-Este comando instalará todas las dependencias necesarias:
-
-- `@trpc/server` - Framework tRPC backend
-- `@trpc/client` - Cliente tRPC
-- `zod` - Validación de esquemas
-- `typescript` - Tipado estático
-- `tsx` - Ejecutor de archivos TypeScript
-
----
-
-## Configuración
-
-### Estructura de Carpetas
+## Arquitectura del proyecto
 
 ```text
 tRPC/
-├──server/ 
-│   └──src/
-│       ├── server.ts          # Punto de entrada: configura e inicia el servidor HTTP
-│       ├── procedures.ts      # Define queries y mutations de la API tRPC
-│       ├── database.ts        # Funciones de base de datos simulada
-│       ├── schemas.ts         # Esquemas de validación con Zod
-│       └── types.ts           # Tipos TypeScript exportables
-├──client/
-│   └──src/
-│       └── client.ts          # Cliente que consume la API tRPC
-├── package.json           # Dependencias del proyecto
-├── tsconfig.json          # Configuración TypeScript
-└── README.md              # Este archivo
+├── docker-compose.yml              # Servicio MongoDB
+├── server/
+│   ├── .env                         # Configuración local del servidor
+│   └── src/
+│       ├── index.ts                 # Servidor Express y endpoint /trpc
+│       ├── config/connectionDB.ts  # Conexión con MongoDB
+│       ├── core/domain/             # Dominio y prioridades de las tareas
+│       └── features/tasks/
+│           ├── tasks.service.ts     # Operaciones de persistencia
+│           └── trpc/
+│               ├── context.ts
+│               ├── trpc.ts
+│               └── routers/          # Procedimientos tRPC
+└── client/react-ts/
+    └── src/
+        ├── lib/trpc.ts             # Cliente tRPC tipado
+        └── components/             # Formulario y lista de tareas
 ```
 
----
+## Configuración
 
-## Ejecución
+### 1. Descargar el proyecto
 
-### Terminal 1 - Inicia el Servidor
+Clona el repositorio o abre la carpeta del proyecto en VS Code y sitúate en su raíz:
 
 ```bash
-npm run server
+cd tRPC
 ```
 
-Deberías ver:
+### 2. Iniciar MongoDB
 
-```text
-Servidor Backend tRPC corriendo en http://localhost:4000
-Abre otra terminal y ejecuta: npx tsx src/client.ts
-```
-
-### Terminal 2 - Ejecuta el Cliente
-
-En **otra terminal**, en la misma carpeta del proyecto:
+Desde la raíz del proyecto ejecuta:
 
 ```bash
-npm run client
+docker compose up -d
 ```
 
-Verás la salida completa del CRUD demostrativo:
+El archivo `docker-compose.yml` crea un contenedor llamado `mongo` con estos datos:
 
-```text
-═════════════════════════════════════════════════════════
-  DEMO CRUD COMPLETO CON tRPC - Gestor de Tareas
-═════════════════════════════════════════════════════════
+| Dato | Valor |
+| --- | --- |
+| Host | `localhost` |
+| Puerto publicado | `27018` |
+| Usuario | `admin` |
+| Contraseña | `admin123` |
+| Base de datos | `task_manager` |
 
-[READ] Consultando tareas iniciales...
-✓ Se encontraron 2 tareas:
+El servidor ya incluye `server/.env` con la configuración necesaria:
 
-  • ID 2: "Preparar la exposición de tRPC" [Prioridad: alta]
-  • ID 1: "Aprender los fundamentos de la Web" [Prioridad: alta]
-  ...
+```env
+PORT=3001
+MONGO_URI=mongodb://admin:admin123@localhost:27018/task_manager?authSource=admin
 ```
 
----
+### 3. Instalar dependencias
 
-## Conceptos Fundamentales
+El backend y el frontend tienen sus propios `package.json`, por lo que las dependencias se instalan por separado.
 
-### ¿Qué es tRPC?
+En una terminal:
 
-tRPC es un framework que permite crear **APIs type-safe** sin necesidad de:
+```bash
+cd server
+npm install
+```
 
-- ✗ Escribir esquemas REST (GET, POST, PUT, DELETE)
-- ✗ Documentar endpoints manualmente
-- ✗ Validar tipos en tiempo de runtime
+En otra terminal:
 
-En su lugar, ofrece:
+```bash
+cd client/react-ts
+npm install
+```
 
-- ✓ Tipado end-to-end automático
-- ✓ Autocompletado completo en el cliente
-- ✓ Validación de datos con Zod
-- ✓ Errores detectados en desarrollo
+## Ejecución de la demo
 
-### Queries vs Mutations
+La aplicación requiere tres procesos: MongoDB, el servidor tRPC y el cliente React.
 
-| Query | Mutation |
-| ------- | ---------- |
-| Lee datos sin cambiar estado | Escribe o modifica datos |
-| Puede cachearse | No se cachea |
-| Equivalente a GET en REST | Equivalente a POST/PUT/DELETE |
-| Ejemplo: `obtenerTareas` | Ejemplo: `crearTarea`, `actualizarTarea` |
+### Terminal 1: MongoDB
 
-### Validación con Zod
+Si todavía no lo iniciaste:
 
-Zod asegura que los datos sean válidos **antes** de procesarlos:
+```bash
+docker compose up -d
+```
+
+### Terminal 2: servidor tRPC
+
+Desde `server/` ejecuta:
+
+```bash
+npm run dev
+```
+
+Cuando la conexión sea correcta, el servidor estará disponible en:
+
+- API tRPC: `http://localhost:3001/trpc`
+- Comprobación de salud: `http://localhost:3001/health`
+
+### Terminal 3: cliente React
+
+Desde `client/react-ts/` ejecuta:
+
+```bash
+npm run dev
+```
+
+Abre la URL que muestre Vite, normalmente `http://localhost:5173`. Desde la interfaz puedes crear tareas, consultar la lista, actualizar su estado/prioridad y eliminarlas.
+
+Para detener MongoDB al terminar la demo:
+
+```bash
+docker compose down
+```
+
+## Procedimientos tRPC
+
+El router principal se encuentra en `server/src/features/tasks/trpc/routers/_app.ts` y monta `tasksRouter`. El endpoint HTTP común es `/trpc`, pero cada operación se identifica por su procedimiento:
+
+| Procedimiento | Tipo | Entrada | Función |
+| --- | --- | --- | --- |
+| `tasks.getAll` | Query | Ninguna | Obtiene todas las tareas |
+| `tasks.getById` | Query | `{ id: string }` | Obtiene una tarea por su ID |
+| `tasks.create` | Mutation | `title`, `description`, `isCompleted` y `priority` | Crea una tarea |
+| `tasks.update` | Mutation | `{ id, data }` | Actualiza parcialmente una tarea |
+| `tasks.delete` | Mutation | `{ id: string }` | Elimina una tarea |
+
+Las prioridades válidas son `Baja`, `Media` y `Alta`. `isCompleted` tiene `false` como valor predeterminado en la creación. Las entradas se validan con Zod; por ejemplo, título y descripción son obligatorios al crear una tarea.
+
+El cliente no construye manualmente las rutas ni los tipos. Usa el router importado desde el servidor:
 
 ```typescript
-const crearTareaSchema = z.object({
-  titulo: z.string().min(3).max(100),              // String de 3-100 caracteres
-  descripcion: z.string().max(500).optional(),    // Optional
-  prioridad: z.enum(['baja', 'media', 'alta'])    // Solo estos valores
+const tasks = trpc.tasks.getAll.useQuery();
+
+const createTask = trpc.tasks.create.useMutation();
+await createTask.mutateAsync({
+  title: 'Estudiar tRPC',
+  description: 'Revisar queries y mutations',
+  isCompleted: false,
+  priority: 'Media',
 });
 ```
 
-Si envías datos inválidos, tRPC rechaza la solicitud automáticamente.
+## Conceptos utilizados
 
-### Type Safety (Tipado Seguro)
+### ¿Qué es tRPC?
 
-Cuando importas `AppRouter` en el cliente:
+tRPC permite exponer procedimientos del servidor y consumirlos desde TypeScript sin definir manualmente controladores REST, DTO duplicados ni un archivo OpenAPI. El tipo `AppRouter` funciona como contrato compartido entre backend y frontend.
+
+En este proyecto, `createExpressMiddleware` conecta el router tRPC con Express en `/trpc`. Las solicitudes HTTP siguen existiendo internamente, pero el desarrollador trabaja con procedimientos tipados como `tasks.create` o `tasks.getAll`.
+
+### Queries y mutations
+
+- **Query:** consulta información sin modificarla. Aquí se utilizan `tasks.getAll` y `tasks.getById`.
+- **Mutation:** crea, modifica o elimina información. Aquí se utilizan `tasks.create`, `tasks.update` y `tasks.delete`.
+
+En React, `@trpc/react-query` ofrece `useQuery` y `useMutation`, mientras que TanStack Query gestiona estados de carga, errores, caché y actualización de datos. Después de crear una tarea, el formulario invalida `tasks.getAll` para refrescar la lista.
+
+### Validación con Zod
+
+Cada procedimiento declara un esquema de entrada con Zod antes de ejecutar la lógica del servicio. Por ejemplo, la creación valida que `title` y `description` sean cadenas no vacías y que `priority` pertenezca al conjunto permitido. Si la entrada no cumple el esquema, tRPC rechaza la solicitud antes de acceder a MongoDB.
+
+### Tipado end-to-end
+
+El cliente importa `AppRouter` desde el servidor:
 
 ```typescript
-import type { AppRouter } from './server';
-
-const client = createTRPCClient<AppRouter>({ ... });
-
-// TypeScript SABE exactamente qué devuelve obtenerTareas
-const tareas = await client.obtenerTareas.query();
-// tareas es de tipo Tarea[] automáticamente ✓
-
-// Si escribes mal:
-const resultado = await client.obtenerTareass.query();
-// Error de compilación ✗
+import type { AppRouter } from '../../../../server/src/features/tasks/trpc/routers/_app';
 ```
+
+Por eso el editor conoce los procedimientos, sus parámetros y sus respuestas. Un nombre de procedimiento incorrecto o un campo inválido produce un error de TypeScript durante el desarrollo, antes de llegar al servidor.
+
+### Batching y conexión del cliente
+
+`httpBatchLink` configura la comunicación del cliente con `http://localhost:3001/trpc` y permite agrupar solicitudes compatibles. La integración se completa envolviendo la aplicación con `QueryClientProvider` y `trpc.Provider` en `client/react-ts/src/main.tsx`.
+
+### Persistencia y separación de responsabilidades
+
+Express se encarga del servidor HTTP, tRPC de los procedimientos y su contrato tipado, Zod de validar entradas, `TaskService` de la lógica de tareas y Mongoose de la persistencia en MongoDB. Esta separación facilita entender y mantener cada parte de la aplicación.
